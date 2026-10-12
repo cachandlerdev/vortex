@@ -12,4 +12,7 @@ typedef struct {
   uint64_t C_addr;
 } kernel_arg_t;
 
+// TODO: Maybe add BLOCK_SIZE and GRID_SIZE defines?
+// No clue what we're supposed to do here.
+
 #endif

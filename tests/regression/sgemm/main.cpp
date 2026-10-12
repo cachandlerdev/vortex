@@ -11,6 +11,9 @@
 // launch + 1 trailing wait. The per-queue worker thread serializes
 // everything in FIFO order.
 
+// This is the host code that launches the SGEMM (matrix multication) kernel.
+// TODO: Instructions say to modify this if using shared memory
+
 #include <vortex2.h>
 #include "common.h"
 
@@ -89,22 +92,30 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    // TODO: If you use shared memory, maybe change some stuff in here?
+    // Not sure if in here or in the GPU
+    // Reference sgemm2 for shared memory
+
+    // This is where he creates the gpu buffers
     vx_buffer_h A_buf=nullptr, B_buf=nullptr, C_buf=nullptr;
     CHECK(vx_buffer_create(dev, buf_size, VX_MEM_READ,  &A_buf));
     CHECK(vx_buffer_create(dev, buf_size, VX_MEM_READ,  &B_buf));
     CHECK(vx_buffer_create(dev, buf_size, VX_MEM_WRITE, &C_buf));
 
+    // Here's where he creates the kernel
     vx_module_h mod = nullptr;
     vx_kernel_h kern = nullptr;
     CHECK(vx_module_load_file(dev, kernel_file, &mod));
     CHECK(vx_module_get_kernel(mod, "main", &kern));
 
+    // Here's where he passes in the kernel args
     kernel_arg_t kernel_arg{};
     kernel_arg.size = size;
     CHECK(vx_buffer_address(A_buf, &kernel_arg.A_addr));
     CHECK(vx_buffer_address(B_buf, &kernel_arg.B_addr));
     CHECK(vx_buffer_address(C_buf, &kernel_arg.C_addr));
 
+    // These are the host values
     std::vector<TYPE> h_A(size_sq), h_B(size_sq), h_C(size_sq);
     for (uint32_t i = 0; i < size_sq; ++i) {
         h_A[i] = static_cast<TYPE>(std::rand()) / RAND_MAX;
@@ -113,9 +124,11 @@ int main(int argc, char** argv) {
 
     auto t0 = std::chrono::high_resolution_clock::now();
 
+    // This is when A and B get copied over to the GPU buffers
     CHECK(vx_enqueue_write(q, A_buf, 0, h_A.data(), buf_size, 0,nullptr,nullptr));
     CHECK(vx_enqueue_write(q, B_buf, 0, h_B.data(), buf_size, 0,nullptr,nullptr));
 
+    // Kernel launch args?
     vx_launch_info_t li{};
     li.struct_size = sizeof(li);
     li.kernel      = kern;
@@ -125,6 +138,7 @@ int main(int argc, char** argv) {
     li.grid_dim[0] = grid[0];  li.grid_dim[1] = grid[1];
     li.block_dim[0]= block[0]; li.block_dim[1]= block[1];
 
+    // Launch kernel
     vx_event_h launch_ev=nullptr, read_ev=nullptr;
     CHECK(vx_enqueue_launch(q, &li, 0, nullptr, &launch_ev));
     CHECK(vx_enqueue_read(q, h_C.data(), C_buf, 0, buf_size,
@@ -133,6 +147,8 @@ int main(int argc, char** argv) {
     auto t1 = std::chrono::high_resolution_clock::now();
     std::printf("Elapsed: %ld ms\n",
         (long)std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count());
+
+    // Kernel's now done, check with cpu result
 
     int errors = 0;
     std::vector<TYPE> h_ref(size_sq);

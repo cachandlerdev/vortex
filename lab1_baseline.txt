@@ -1,0 +1,23 @@
+sgemm vortex2: 64x64
+Elapsed: 4435 ms
+PERF: instrs=787488, cycles=1806619, IPC=0.436
+PASSED!
+
+Baseline Performance:
+=========================================
+Total FLOPS: 2 x N^3 = 2 * 64^3 = 524,288
+Achieved: FLOPS / cycles = 524,288 / 1806619 = 0.29020396663602010163736792317583
+Peak: 2 * NUM_THREADS * NUM_FPU_BLOCKS = 2 * 4 * 1 = 8
+Efficiency: (Achieved / Peak) * 100% = (0.29020396663602010163736792317583 / 8) * 100% = 3.63% efficiency
+
+Example w/ 8 threads, 8 warps, 1 fpu block, 4x cache, L2 enabled
+==========================================
+sgemm vortex2: 64x64
+Elapsed: 1771 ms
+PERF: instrs=393792, cycles=671396, IPC=0.587
+PASSED!
+
+Flops: 2 * 64^3 = 524,288
+Achieved: 524288 / 671396 = 0.78089234967143086941238851586843
+Peak: 2 * 8 * 1 = 16
+Efficiency: (0.78 / 16) * 100 = 4.88% efficiency
