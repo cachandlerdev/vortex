@@ -87,9 +87,9 @@ int main(int argc, char** argv) {
 
     // Add tiling support
     uint32_t tile_elems_a = tile_size * tile_size;
-    //uint32_t tile_elems_b = tile_size * tile_size;
-    //uint32_t local_mem = (tile_elems_a + tile_elems_b) * sizeof(TYPE);
-    uint32_t local_mem = tile_elems_a * sizeof(TYPE);
+    uint32_t tile_elems_b = tile_size * tile_size;
+    uint32_t local_mem = (tile_elems_a + tile_elems_b) * sizeof(TYPE);
+    //uint32_t local_mem = tile_elems_a * sizeof(TYPE);
 
     std::cout << "sgemm vortex2: " << size << "x" << size << std::endl;
 
