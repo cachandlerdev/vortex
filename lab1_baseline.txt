@@ -106,3 +106,22 @@ Peak: 2 * 8 * 1 = 16
 Efficiency: 2.64%
 
 PERF: instrs=612928, cycles=1199907, IPC=0.511
+
+=======================
+Now register tiling
+
+CONFIGS="-DVX_CFG_NUM_THREADS=4 -DVX_CFG_NUM_WARPS=4 -DVX_CFG_NUM_FPU_BLOCKS=1 -DVX_CFG_ISSUE_WIDTH=1 -DVX_CFG_DCACHE_SIZE=16384 -DVX_CFG_SMEM_SIZE=8192 -DVX_CFG_L2_ENABLE" ./ci/blackbox.sh --driver=simx --cores=1 --app=sgemm --args="-n64"
+
+sgemm vortex2: 64x64
+tile size: 4
+local memory: 128 bytes
+block: 4x4
+grid: 4x4
+Elapsed: 2506 ms
+PERF: instrs=314976, cycles=866851, IPC=0.363
+PASSED!
+
+Flops: 524,288
+Achieved: 524288/866851 = 0.60481905194779725696803718286072
+Peak: 2 * 4 * 1 = 8
+7.5%

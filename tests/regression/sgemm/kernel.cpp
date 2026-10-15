@@ -51,6 +51,55 @@ __kernel void kernel_main(kernel_arg_t* __UNIFORM__ arg) {
 	auto B = reinterpret_cast<TYPE*>(arg->B_addr);
 	auto C = reinterpret_cast<TYPE*>(arg->C_addr);
     auto size = arg->size; // size of matrix. (always square?)
+    
+    // Have each thread compute tile_size * tile_size elements
+    auto tile_size = arg->tile_size;
+
+    auto col = blockIdx.x * blockDim.x + threadIdx.x;
+    auto row = blockIdx.y * blockDim.y + threadIdx.y;
+    
+    // (y, x)
+    // t_00 t_01 -> [0-3, 0-3], [4-7, 0-3]
+    // t_10 t_11 -> [4-7, 0-3], [4-7, 4-7]
+    
+    float sum[4][4];
+    for (uint32_t y = 0; y < tile_size; ++y) {
+        uint32_t global_y = row * tile_size + y;
+
+        for (uint32_t x = 0; x < tile_size; ++x) {
+            uint32_t global_x = col * tile_size + x;
+            
+            TYPE partial_sum(0);
+
+            #pragma unroll 8
+            for (size_t e = 0; e < size; ++e) {
+                partial_sum += A[global_y * size + e] * B[e * size + global_x];
+            }
+            sum[y][x] = partial_sum;
+        }
+    }
+
+    for (uint32_t y = 0; y < tile_size; ++y) {
+        uint32_t global_y = row * tile_size + y;
+
+        for (uint32_t x = 0; x < tile_size; ++x) {
+            uint32_t global_x = col * tile_size + x;
+            C[global_y * size + global_x] = sum[y][x];
+        }
+    }
+
+    /**
+        TYPE sum(0);
+        #pragma unroll 8
+        for (size_t e = 0; e < size; ++e) {
+            sum += A[row * size + e] * B[e * size + col];
+        }
+
+        C[row * size + col] = sum;
+    */
+    
+    
+    /** 
 
     // Shared tile memory for A and B. Each block works on a tile
     auto tile_size = arg->tile_size;
@@ -101,5 +150,7 @@ __kernel void kernel_main(kernel_arg_t* __UNIFORM__ arg) {
 
     // Set the result accordingly.
     C[g_row * size + g_col] = sum;
+    
+    */
 
 }

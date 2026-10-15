@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     vx_queue_h q = nullptr;
     CHECK(vx_queue_create(dev, &qi, &q));
 
-    const uint32_t global_dim[2] = {size, size};
+    const uint32_t global_dim[2] = {size / tile_size, size / tile_size};
     //uint32_t grid[2], block[2];
 
     // Calculate final grid & block dimensions
