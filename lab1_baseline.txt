@@ -21,3 +21,14 @@ Flops: 2 * 64^3 = 524,288
 Achieved: 524288 / 671396 = 0.78089234967143086941238851586843
 Peak: 2 * 8 * 1 = 16
 Efficiency: (0.78 / 16) * 100 = 4.88% efficiency
+
+===========
+Added tiling & shared memory
+=============
+sgemm vortex2: 64x64
+tile size: 4
+local memory: 128 bytes
+Elapsed: 7607 ms
+PERF: instrs=1377312, cycles=3588059, IPC=0.384
+PASSED!
+==============

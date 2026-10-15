@@ -38,6 +38,8 @@
 namespace {
 const char* kernel_file = "kernel.vxbin";
 uint32_t    size        = 64;
+// Add tile size
+uint32_t tile_size = 32;
 
 void parse_args(int argc, char** argv) {
     int c;
@@ -70,11 +72,30 @@ void matmul_cpu(TYPE* out, const TYPE* A, const TYPE* B, uint32_t n) {
 
 int main(int argc, char** argv) {
     parse_args(argc, argv);
+
+    // Add tile size
+
+    if ((size / tile_size) * tile_size != size) {
+        printf("Error: matrix size %d must be a multiple of tile size %d\n", size, tile_size);
+        return -1;
+    }
+
+
     std::srand(50);
 
     const uint32_t size_sq  = size * size;
     const uint64_t buf_size = size_sq * sizeof(TYPE);
+
+    // Add tiling support
+    uint32_t tile_elems_a = tile_size * tile_size;
+    uint32_t tile_elems_b = tile_size * tile_size;
+    uint32_t local_mem = (tile_elems_a + tile_elems_b) * sizeof(TYPE);
+
     std::cout << "sgemm vortex2: " << size << "x" << size << std::endl;
+
+    // Print tile stuff
+    std::cout << "tile size: " << tile_size << std::endl;
+    std::cout << "local memory: " << local_mem << " bytes" << std::endl;
 
     vx_device_h dev = nullptr;
     CHECK(vx_device_open(0, &dev));
@@ -84,13 +105,21 @@ int main(int argc, char** argv) {
     CHECK(vx_queue_create(dev, &qi, &q));
 
     const uint32_t global_dim[2] = {size, size};
-    uint32_t grid[2], block[2];
-    CHECK(vx_device_max_occupancy_grid(dev, 2, global_dim, grid, block));
-    if ((size % block[0]) || (size % block[1])) {
+    //uint32_t grid[2], block[2];
+
+    // Calculate final grid & block dimensions
+    uint32_t grid_dim[2] = {size / tile_size, size / tile_size};
+    uint32_t block_dim[2] = {tile_size, tile_size};
+
+    CHECK(vx_device_max_occupancy_grid(dev, 2, global_dim, grid_dim, block_dim));
+    if ((size % block_dim[0]) || (size % block_dim[1])) {
         std::cerr << "matrix size " << size << " must divide block "
-                  << block[0] << "x" << block[1] << std::endl;
+                  << block_dim[0] << "x" << block_dim[1] << std::endl;
         return -1;
     }
+
+    std::cout << "block: " << block_dim[0] << " " << block_dim[1] << std::endl;
+    std::cout << "grid: " << grid_dim[0] << " " << grid_dim[1] << std::endl;
 
     // TODO: If you use shared memory, maybe change some stuff in here?
     // Not sure if in here or in the GPU
@@ -111,6 +140,9 @@ int main(int argc, char** argv) {
     // Here's where he passes in the kernel args
     kernel_arg_t kernel_arg{};
     kernel_arg.size = size;
+    // Pass in tile size
+    kernel_arg.tile_size = tile_size;
+
     CHECK(vx_buffer_address(A_buf, &kernel_arg.A_addr));
     CHECK(vx_buffer_address(B_buf, &kernel_arg.B_addr));
     CHECK(vx_buffer_address(C_buf, &kernel_arg.C_addr));
@@ -135,8 +167,12 @@ int main(int argc, char** argv) {
     li.args_host   = &kernel_arg;
     li.args_size   = sizeof(kernel_arg);
     li.ndim        = 2;
-    li.grid_dim[0] = grid[0];  li.grid_dim[1] = grid[1];
-    li.block_dim[0]= block[0]; li.block_dim[1]= block[1];
+    // Account for resized grid/block size because of tiles
+    li.grid_dim[0] = grid_dim[0];  
+    li.grid_dim[1] = grid_dim[1];
+    li.block_dim[0]= block_dim[0]; 
+    li.block_dim[1]= block_dim[1];
+    li.lmem_size = local_mem;
 
     // Launch kernel
     vx_event_h launch_ev=nullptr, read_ev=nullptr;
