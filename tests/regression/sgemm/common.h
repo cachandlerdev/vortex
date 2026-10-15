@@ -16,4 +16,6 @@ typedef struct {
 // TODO: Maybe add BLOCK_SIZE and GRID_SIZE defines?
 // No clue what we're supposed to do here.
 
+uint32_t tile_size = 32;
+
 #endif

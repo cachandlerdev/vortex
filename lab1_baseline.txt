@@ -28,7 +28,81 @@ Added tiling & shared memory
 sgemm vortex2: 64x64
 tile size: 4
 local memory: 128 bytes
-Elapsed: 7607 ms
-PERF: instrs=1377312, cycles=3588059, IPC=0.384
+block: 4x4
+grid: 16x16
+Elapsed: 8480 ms
+PERF: instrs=1393696, cycles=3673026, IPC=0.379
 PASSED!
 ==============
+
+Flops: 2 * 64^3 = 524,288
+Achieved: 524288 / 3673026 = 0.14274007317127621748389475054083
+Peak: 2 * 4 * 1 = 8
+Efficiency: (0.14274007317127621748389475054083 / 8) * 100 = 1.78%
+
+8 threads, 8 warps (8x8), 16k dcash, 16k smem, l2 enabled
+====
+tile size: 8
+local memory: 512 bytes
+block: 8x8
+grid: 8x8
+Elapsed: 4419 ms
+PERF: instrs=616000, cycles=1203309, IPC=0.512
+PASSED!
+
+Flops: 2 * 64^3 = 524288
+Achieved: 524288/1203309 = 0.43570520955132887728754625786062
+Peak: 2 * 8 * 1 = 16
+Efficiency: 2.7%
+
+=====================
+32
+
+sgemm vortex2: 32x32
+tile size: 8
+local memory: 512 bytes
+block: 8x8
+grid: 4x4
+Elapsed: 636 ms
+PERF: instrs=84288, cycles=166058, IPC=0.508
+PASSED!
+
+Flops = 2 * 32^3 = 65,536
+Achieved: 65536/166058 = 0.39465728841729997952522612581146
+Peak: 2 * 8 * 1 = 16
+Efficiency: 2.47%
+
+====
+sgemm vortex2: 32x32
+tile size: 16
+local memory: 2048 bytes
+block: 16x16
+grid: 2x2
+Elapsed: 601 ms
+PERF: instrs=39040, cycles=81159, IPC=0.481
+PASSED!
+
+Flops = 65,536
+Achieved: 65536/81159 = 0.80750132456043075937357532744366
+Peak: 2 * 16 * 1 = 32
+Efficiency: 2.5%
+
+==================
+
+ CONFIGS="-DVX_CFG_NUM_THREADS=8 -DVX_CFG_NUM_WARPS=8 -DVX_CFG_NUM_FPU_BLOCKS=1 -DVX_CFG_ISSUE_WIDTH=1 -DVX_CFG_DCACHE_SIZE=16384 -DVX_CFG_SMEM_SIZE=8192 -DVX_CFG_L2_ENABLE" ./ci/blackbox.sh --driver=simx --cores=1 --app=sgemm --args="-n32"
+
+sgemm vortex2: 64x64
+tile size: 8
+local memory: 512 bytes
+block: 8x8
+grid: 8x8
+Elapsed: 5159 ms
+PERF: instrs=606272, cycles=1238935, IPC=0.489
+PASSED!
+
+Flops: 524,288
+Achieved: 524288/1238935=0.42317635711316574315843849758058
+Peak: 2 * 8 * 1 = 16
+Efficiency: 2.64%
+
+PERF: instrs=612928, cycles=1199907, IPC=0.511

@@ -71,13 +71,12 @@ __kernel void kernel_main(kernel_arg_t* __UNIFORM__ arg) {
     auto local_ptr = reinterpret_cast<TYPE*>(__local_mem());
     auto local_A = local_ptr;
     auto local_B = local_A + tile_elems_a;
-
-    // Loop over the A & B tiles to compute C's element
+    
     TYPE sum(0);
-    //#pragma unroll
+    #pragma unroll 8
     for (uint32_t phase = 0; phase < size / tile_size; ++phase) {
         // Collaborative loading of A and B tiles into shared memory
-
+        
         // A idx: (account for prev rows) + (starting col for phase) + (thread offset in block)
         int aPrevRowsOffset = g_row * size;
         int aStartingCol = phase * tile_size;
@@ -102,23 +101,5 @@ __kernel void kernel_main(kernel_arg_t* __UNIFORM__ arg) {
 
     // Set the result accordingly.
     C[g_row * size + g_col] = sum;
-
-    // OG code
-    /** 
-
-    // Check that col, row in matrix width (added by me)
-    if ((row < size) && col < size) {
-
-        // Get the summation for the inner product
-        TYPE sum(0);
-        #pragma unroll 8
-        for (uint32_t e = 0; e < size; ++e) {
-            sum += A[row * size + e] * B[e * size + col];
-        }
-
-        // Set the result accordingly.
-        C[row * size + col] = sum;
-    }
-    */
 
 }

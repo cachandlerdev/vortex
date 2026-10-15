@@ -39,7 +39,6 @@ namespace {
 const char* kernel_file = "kernel.vxbin";
 uint32_t    size        = 64;
 // Add tile size
-uint32_t tile_size = 32;
 
 void parse_args(int argc, char** argv) {
     int c;
@@ -118,8 +117,8 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    std::cout << "block: " << block_dim[0] << " " << block_dim[1] << std::endl;
-    std::cout << "grid: " << grid_dim[0] << " " << grid_dim[1] << std::endl;
+    std::cout << "block: " << block_dim[0] << "x" << block_dim[1] << std::endl;
+    std::cout << "grid: " << grid_dim[0] << "x" << grid_dim[1] << std::endl;
 
     // TODO: If you use shared memory, maybe change some stuff in here?
     // Not sure if in here or in the GPU
