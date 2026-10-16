@@ -39,6 +39,7 @@ namespace {
 const char* kernel_file = "kernel.vxbin";
 uint32_t    size        = 64;
 // Add tile size
+uint32_t tile_size = 32;
 
 void parse_args(int argc, char** argv) {
     int c;
@@ -107,11 +108,13 @@ int main(int argc, char** argv) {
     const uint32_t global_dim[2] = {size / tile_size, size / tile_size};
     //uint32_t grid[2], block[2];
 
+    std::cout << "global_dim: " << global_dim[0] << "x" << global_dim[1] << std::endl;
+
     // Calculate final grid & block dimensions
     uint32_t grid_dim[2] = {size / tile_size, size / tile_size};
-    uint32_t block_dim[2] = {tile_size, tile_size};
+    uint32_t block_dim[2] = {tile_size / 4, tile_size / 4};
 
-    CHECK(vx_device_max_occupancy_grid(dev, 2, global_dim, grid_dim, block_dim));
+    //CHECK(vx_device_max_occupancy_grid(dev, 2, global_dim, grid_dim, block_dim));
     if ((size % block_dim[0]) || (size % block_dim[1])) {
         std::cerr << "matrix size " << size << " must divide block "
                   << block_dim[0] << "x" << block_dim[1] << std::endl;
