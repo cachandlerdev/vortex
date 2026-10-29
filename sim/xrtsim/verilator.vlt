@@ -1,0 +1,9 @@
+`verilator_config
+
+lint_off -rule BLKANDNBLK -file "/home/cachandler/Productivity/School/2026-2027/cs254a_vortex/vortex/third_party/cvfpu/*"
+lint_off -rule UNOPTFLAT -file "/home/cachandler/Productivity/School/2026-2027/cs254a_vortex/vortex/third_party/cvfpu/*"
+lint_off -file "/home/cachandler/Productivity/School/2026-2027/cs254a_vortex/vortex/third_party/cvfpu/*"
+
+lint_off -rule BLKANDNBLK -file "/home/cachandler/Productivity/School/2026-2027/cs254a_vortex/vortex/third_party/hardfloat/*"
+lint_off -rule UNOPTFLAT -file "/home/cachandler/Productivity/School/2026-2027/cs254a_vortex/vortex/third_party/hardfloat/*"
+lint_off -file "/home/cachandler/Productivity/School/2026-2027/cs254a_vortex/vortex/third_party/hardfloat/*"
